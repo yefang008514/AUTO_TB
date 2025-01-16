@@ -1,6 +1,6 @@
 import os,sys
 sys.path.append(os.getcwd())
-from module.read_data import Data_Loader 
+from module.read_data import MappingReader,Acct_Reader
 from module.cal_data import Verify_Statement,unpivot_df_account_balance,cal_cell_amount
 from module.update_data import VBA_update_data
 
@@ -22,7 +22,8 @@ def main_flow(path_mapping,path_account_balance,path_workingpaper,path_log_save)
     path_log_save=path_log_save
 
     # 1.读取数据 
-    dfs,df_account_balance=Data_Loader(path_mapping,path_account_balance)
+    dfs=MappingReader(path=path_mapping,header=1).read_mapping_table()
+    df_account_balance=Acct_Reader(path=path_account_balance).read_account_balance()
 
     #2.处理科目余额表数据
     df_acct_2d=unpivot_df_account_balance(df_account_balance)

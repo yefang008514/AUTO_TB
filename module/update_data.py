@@ -11,6 +11,18 @@ sys.path.append(os.getcwd())
 from module.cal_data import cal_result
 
 
+def is_file_open(file_path):
+    '''
+    检查试算文件是否被打开，提示用户关闭文件。
+    '''
+    try:
+        with open(file_path, 'r+'):
+            pass
+    except (IOError, PermissionError):
+        return True
+    return False
+
+
 def batch_update_excel_openpyxl(path,sheet_name, update_details):
     """
     使用 openpyxl 批量更新指定Excel文件中的指定工作表和单元格的值。
@@ -20,6 +32,9 @@ def batch_update_excel_openpyxl(path,sheet_name, update_details):
     """
     path=path
     updates=update_details.set_index('单元格')['金额'].to_dict()
+
+    if is_file_open(path):
+        raise Exception(f"{path}文件已打开，请关闭文件后重试。")
 
     try:
         # 加载工作簿
@@ -44,6 +59,9 @@ def xlwings_update_data(path,sheet_name:str,update_details,engine,visible,auto_c
     '''
     path=path 
     data=update_details.set_index('单元格')['金额'].to_dict()
+
+    if is_file_open(path):
+        raise Exception(f"{path}文件已打开，请关闭文件后重试。")
 
     if engine is None or engine=='wps':
         # xlwings 打开 wps 
@@ -80,6 +98,9 @@ def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
     path=path 
     data=update_details[['单元格','金额']].values.tolist()
     visible=visible
+
+    if is_file_open(path):
+        raise Exception(f"{path}文件已打开，请关闭文件后重试。")
 
     #VBA代码
     code_vba='''
