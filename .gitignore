@@ -6,3 +6,10 @@
 
 #忽略DATA
 DATA/
+
+dist/
+
+
+build/
+
+示例数据/

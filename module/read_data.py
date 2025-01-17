@@ -44,9 +44,12 @@ class MappingReader:
         mask=(df['账户代码'].apply(lambda x: 1 if'|' in str(x) else 0)==1)
         df_split = df[mask].copy()
 
-        df_split=df_split.applymap(lambda x: x.replace('\n','')).copy()#清洗\n
-        list_split=[self.clean_split_df(df_split,n) for n in range(len(df_split))]
-        re_split=pd.concat(list_split).copy()
+        if len(df_split)>0:
+            df_split=df_split.applymap(lambda x: x.replace('\n','')).copy()#清洗\n
+            list_split=[self.clean_split_df(df_split,n) for n in range(len(df_split))]
+            re_split=pd.concat(list_split).copy()
+        else:
+            re_split=pd.DataFrame()
 
         #提取行中没有"|"的数据
         df_no_split = df[~mask].copy()
