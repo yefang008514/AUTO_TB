@@ -22,7 +22,7 @@ def main_streamlit():
 
     mode = st.sidebar.selectbox("选择模式", ["单文件执行", "批量循环执行"])
 
-    uploaded_mapping = st.file_uploader("请上【传试算单元格映射表】", type=['xlsx','xlsm'])
+    uploaded_mapping = st.file_uploader("请上传【试算单元格映射表】", type=['xlsx','xlsm'])
 
     if uploaded_mapping:
         df_mapping = MappingReader(path=uploaded_mapping, header=1).read_mapping_table()
