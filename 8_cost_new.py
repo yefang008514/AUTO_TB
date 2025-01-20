@@ -36,20 +36,8 @@ if __name__ == '__main__':
     # print('done')
 
     '''批量修改8_费用 按照母公司的格式'''
-    # 从1.10之后
-    # 销售费用 B2-C58 
-    # D58
-    # =VLOOKUP(B58,'WPS Cloud:\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\[1.00 浙江东方基因生物制品股份有限公司 2024.xlsx]8_费用'!$B:$D,3,0)
 
-    # 管理费用 B68-C113
-    # D113
-    # =VLOOKUP(B113,'WPS Cloud:\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\[1.00 浙江东方基因生物制品股份有限公司 2024.xlsx]8_费用'!$B:$D,3,0)
-    
-    # wb=xw.Book()
-    # temp_df=pd.DataFrame(np.arange(57*2).reshape(57,2))
-    # wb.sheets['Sheet1'].range("B2:C58").value=temp_df.values
-    # wb.save(r'test.xlsx')
-    # wb.close()
+    ######################################################################################
 
     wb_template_path=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
     with xw.App(visible=False, add_book=False) as app:
@@ -67,10 +55,10 @@ if __name__ == '__main__':
         with xw.App(visible=False, add_book=False, impl=impl) as app:
             print(f'正在处理{path}')
             wb=app.books.open(path)
-            wb.sheets['8_费用'].range("B2:D58").value=df_cost_1.values
-            # wb.sheets['8_费用'].range("D58").formula = '''=VLOOKUP(B58,'[1.00 浙江东方基因生物制品股份有限公司 2024.xlsx]8_费用'!$B:$D,3,0)'''
-            wb.sheets['8_费用'].range("B68:D113").value=df_cost_2.values
-            # wb.sheets['8_费用'].range("D113").formula = '''=VLOOKUP(B113,'[1.00 浙江东方基因生物制品股份有限公司 2024.xlsx]8_费用'!$B:$D,3,0)'''
+            wb.sheets['8_费用'].range("B2:D58").value=df_cost_1.values #销售费用
+            wb.sheets['8_费用'].range("B68:D113").value=df_cost_2.values #管理费用
             wb.save()
             wb.close()
     print('done')
+
+
