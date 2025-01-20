@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+import xlwings as xw
 import os,sys
 sys.path.append(os.getcwd())
 
@@ -52,12 +52,29 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
 
     #4.生成试算数据
     result_updates={key:cal_cell_amount(value,df_acct_2d) for key,value in dfs.items()}
+    # xw.view(result_updates['8_费用'])
 
     #5.更新试算底稿
     for k,v in result_updates.items():
+        if k=='8_费用':#费用的特殊判断
+            new_v=v
+            #如果E31->E49单元格不为0，则更新E30为0
+            cell_list_1=['E'+str(m) for m in range(31,50)]
+            flag_1=new_v[new_v['单元格'].isin(cell_list_1)]['金额'].sum()!=0
+            cell_list_2=['E'+str(l) for l in range(141,148)]
+            #如果E141->E147单元格不为0，则更新E140为0
+            flag_2=new_v[new_v['单元格'].isin(cell_list_2)]['金额'].sum()!=0
+            if flag_1:
+                idx_update=new_v.query("单元格=='E30'").index
+                new_v.loc[idx_update,'金额']=0
+            elif flag_2:
+                idx_update=new_v.query("单元格=='E140'").index
+                new_v.loc[idx_update,'金额']=0  
+        else:
+            new_v=v
         para_update={'path':path_workingpaper,
                         'sheet_name':k,
-                        'update_details':v,
+                        'update_details':new_v,
                         'engine':engine,
                         'visible':False,
                         'auto_close':True}
@@ -66,7 +83,7 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
         elif engine=='openpyxl':
             para_update={'path':path_workingpaper,
                         'sheet_name':k,
-                        'update_details':v}
+                        'update_details':new_v}
             batch_update_excel_openpyxl(**para_update)
 
     #6.保存日志
@@ -87,43 +104,6 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
 
     return result_verify,path_log_save
 
-# def muti_main_flow(df_mapping,list_acct_path,list_workingpaper_path):
-#     '''
-#     多线程处理
-#     输入：
-#     df_mapping: 映射表字典
-#     list_acct_path: 存放账户余额表的路径列表
-#     list_workingpaper_path: 存放试算底稿的路径列表
-#     输出：原报表日志
-#     '''
-#     df_mapping=df_mapping
-#     list_acct_path=list_acct_path
-#     list_workingpaper_path=list_workingpaper_path
-
-#     #多线程
-#     pool = Pool(6)
-#     df_list=[df_mapping for i in range(len(list_acct_path))]
-#     arguments=list(zip(df_list,list_acct_path,list_workingpaper_path))
-#     result=pool.starmap(main_flow,arguments)
-
-#     path_workingpaper=list_workingpaper_path[0]
-#     save_path = replace_last_segment(file_path=path_workingpaper,new_segment='原文件合并日志_auto')
-#     path_log_save=os.path.join(save_path,f'原报表批量处理_日志.xlsx')
-
-#     df_log=pd.concat(result)
-#     df_log.to_excel(path_log_save,index=False)
-
-
-    #多线程
-    # path_relation=r"D:\audit_project\AUTO_TB\试算科余映射.xlsm"
-    # df_relation=pd.read_excel(path_relation,sheet_name='匹配结果',header=0)
-
-    # list_acct_path=df_relation['科目余额表路径'].to_list()
-    # list_workingpaper_path=df_relation['试算底稿路径'].to_list()
-
-    # df_mapping=MappingReader(path=path_mapping,header=1).read_mapping_table()
-    # muti_main_flow(df_mapping,list_acct_path,list_workingpaper_path) 
-    # print('Done')
 
 #循环
 def loop_main_flow(df_mapping,list_acct_path,list_workingpaper_path):
@@ -151,13 +131,17 @@ if __name__ == '__main__':
 
 
     #单线程
-    path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_v20250118.xlsx"
+    path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_费用.xlsx"
     # path_account_balance=r"D:\audit_project\AUTO_TB\科目余额表示例.xlsx"
-    path_account_balance=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024科目余额表\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
-    path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
+    # path_account_balance=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024科目余额表\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
+    # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
     
     # path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\科目余额表\北京博朗生.xlsx"
     # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.33 北京博朗生科技有限公司 2024.xlsx"
+
+    path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\FY24\科目余额表_FY24_树状展开\1.02 南京长健生物科技有限公司 2024.xlsx"
+    path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.02 南京长健生物科技有限公司 2024.xlsx"
+
 
     df_mapping=MappingReader(path=path_mapping,header=1).read_mapping_table()
     main_flow(df_mapping=df_mapping,path_account_balance=path_account_balance,path_workingpaper=path_workingpaper,single_save=True,engine='excel') 

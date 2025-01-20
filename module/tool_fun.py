@@ -1,6 +1,7 @@
 import os 
 import duckdb
-
+import xlwings as xw
+import pandas as pd
 
 '''1.获取文件夹下所有文件'''
 def get_file_list(folder_path):
@@ -23,9 +24,6 @@ def write_data_toduckdb(data,table_name,db_path):
         drop table if exists {table_name};
         create table if not exists {table_name} as select * from data;
         ''')
-
-
-
 
 
 ''''3.处理定位表头，去掉干扰数据'''
@@ -62,13 +60,14 @@ def read_data_xlwings(path,sheet_name=None,header=None,auto_header=None):
         book=app.books.open(mypath)
         if sheet_name is not None:
             table=book.sheets[sheet_name].used_range
+            df=table.options(pd.DataFrame, header=header_final, index=False).value
         else:
             table=book.sheets[0].used_range
             df=table.options(pd.DataFrame, header=header_final, index=False).value
         book.close()
     #默认自动识别表头
-    if auto_header is None:
+    if auto_header is None or auto_header==True:
         df=df_auto_header(data=df).copy()
-        return df
     else:
-        return df
+        pass 
+    return df

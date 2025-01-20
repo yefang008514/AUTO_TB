@@ -42,9 +42,12 @@ if __name__ == '__main__':
     wb_template_path=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
     with xw.App(visible=False, add_book=False) as app:
         wb_template=app.books.open(wb_template_path)
-        df_cost_1=pd.DataFrame(wb_template.sheets['8_费用'].range("B2:D58").value)
-        df_cost_2=pd.DataFrame(wb_template.sheets['8_费用'].range("B68:D113").value)
+        df_cost_1=pd.DataFrame(wb_template.sheets['8_费用'].range("B2:D58").value,dtype=object) #转换成字符串的df
+        df_cost_1=df_cost_1.applymap(lambda x:"'"+str(x) if x is not None else None)
+        df_cost_2=pd.DataFrame(wb_template.sheets['8_费用'].range("B68:D113").value,dtype=object)
+        df_cost_2=df_cost_2.applymap(lambda x:"'"+str(x) if x is not None else None)
         wb_template.close()
+
     path_workingpaper=r"D:\audit_project\AUTO_TB\东方生物\FY24\试算科余路径关系表_250120.xlsm"
     df_path=pd.read_excel(path_workingpaper,sheet_name='匹配结果',header=0,dtype=object)
     path_list=df_path['试算底稿路径'].tolist()
