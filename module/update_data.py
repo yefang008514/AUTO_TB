@@ -4,6 +4,8 @@ import ctypes
 import pandas as pd
 from openpyxl import load_workbook
 import time
+from warnings import filterwarnings
+
 
 import os,sys
 sys.path.append(os.getcwd())
@@ -32,6 +34,7 @@ def batch_update_excel_openpyxl(path,sheet_name, update_details):
     """
     path=path
     updates=update_details.set_index('单元格')['金额'].to_dict()
+    filterwarnings('ignore')
 
     if is_file_open(path):
         raise Exception(f"{path}文件已打开，请关闭文件后重试。")
@@ -151,6 +154,8 @@ def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
 
 if __name__ == '__main__':
 
+
+    ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%单线程测试%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     path_map=r"D:\audit_project\AUTO_TB\映射模板设计.xlsx"
     path_acct=r"D:\audit_project\AUTO_TB\科目余额表示例.xlsx"
     path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"

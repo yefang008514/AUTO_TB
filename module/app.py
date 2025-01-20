@@ -5,7 +5,8 @@ import os,sys
 sys.path.append(os.getcwd())
 
 from module.main_flow import main_flow
-from module.read_data import MappingReader
+from module.read_data import MappingReader,clean_start_value
+
 
 
 
@@ -16,16 +17,26 @@ def main_streamlit():
     '''
     copyright
     © [20250110] [立信会计师事务所浙江分所 21部]。保留所有权利。
-
     使用本工具遇到任何问题，请联系：[yefang@bdo.com.cn]
+    !!!!强烈建议使用本工具前备份原始文件!!!!  
+    !!!!强烈建议使用本工具前备份原始文件!!!!  
+    !!!!强烈建议使用本工具前备份原始文件!!!!  
     ''')
 
     mode = st.sidebar.selectbox("选择模式", ["单文件执行", "批量循环执行"])
+    engine = st.selectbox("选择引擎", ["excel", "wps","openpyxl"])
+    mode_start = st.selectbox("是否需要期初", ["是", "否"])
+
+    single_save=True
 
     uploaded_mapping = st.file_uploader("请上传【试算单元格映射表】", type=['xlsx','xlsm'])
 
     if uploaded_mapping:
         df_mapping = MappingReader(path=uploaded_mapping, header=1).read_mapping_table()
+        if mode_start=="否":
+            df_mapping=clean_start_value(df_mapping)
+        else:
+            pass
 
         if mode == "单文件执行":
             st.subheader("单文件执行模式")
@@ -36,7 +47,7 @@ def main_streamlit():
             if st.button("执行"):
                 if path_account_balance is not None and path_workingpaper is not None:
                     try:
-                        result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper)
+                        result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine)
                         st.success("执行完成！日志已生成。")
                         st.dataframe(result)
                     except Exception as e:
@@ -59,14 +70,17 @@ def main_streamlit():
                         try:
                             path_account_balance = list_acct_path[i]
                             path_workingpaper = list_workingpaper_path[i]
-                            result,log_file_path=main_flow(df_mapping, path_account_balance, path_workingpaper)
+                            result,log_file_path=main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine)
                             #显示进度条
                             file_name_TB=list_workingpaper_path[i].split('\\')[-1]
                             st.write(f'''正在处理文件：{file_name_TB},执行进度：{i+1}/{len(list_acct_path)}''')
                             st.progress((i+1) / len(list_acct_path))
-                            st.success("合并完成! 日志保存在: " + log_file_path)
+
+                            #若返回空result不显示日志信息
+                            if len(result)>0:
+                                st.success("处理完成! 日志保存在: " + log_file_path)
                         except Exception as e:
-                            st.error(f"文件{file_name_TB}执行失败！错误信息：{e}")
+                            st.error(f"执行失败！错误信息：{e}")
                 else:
                     st.error("请上传映射关系文件！")
 

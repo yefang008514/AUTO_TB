@@ -6,7 +6,7 @@ sys.path.append(os.getcwd())
 
 from module.read_data import MappingReader, Acct_Reader
 from module.cal_data import Verify_Statement, unpivot_df_account_balance, cal_cell_amount
-from module.update_data import VBA_update_data
+from module.update_data import VBA_update_data,batch_update_excel_openpyxl
 
 
 
@@ -20,7 +20,7 @@ def replace_last_segment(file_path, new_segment):
     
     return new_file_path
 
-def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save=True):
+def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engine):
     '''
     输入：
     df_mapping: 映射表字典
@@ -44,34 +44,46 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save=True
     #2.处理科目余额表数据
     df_acct_2d=unpivot_df_account_balance(df_account_balance)
 
-    #3.校验[原报表数据]
-    result_verify=Verify_Statement(dfs['原报表'],df_acct_2d).verify_pre_result()
+    #3.校验[原报表数据] 如果模板里面没有就不处理
+    if '原报表' not in dfs.keys():
+        pass
+    else:
+        result_verify=Verify_Statement(dfs['原报表'],df_acct_2d).verify_pre_result()
 
-    #4.生成附注数据
+    #4.生成试算数据
     result_updates={key:cal_cell_amount(value,df_acct_2d) for key,value in dfs.items()}
 
     #5.更新试算底稿
     for k,v in result_updates.items():
         para_update={'path':path_workingpaper,
-                    'sheet_name':k,
-                    'update_details':v,
-                    'engine':'excel',
-                    'visible':False,
-                    'auto_close':True}
-        VBA_update_data(**para_update)
+                        'sheet_name':k,
+                        'update_details':v,
+                        'engine':engine,
+                        'visible':False,
+                        'auto_close':True}
+        if engine in ['wps','excel']:
+            VBA_update_data(**para_update)
+        elif engine=='openpyxl':
+            para_update={'path':path_workingpaper,
+                        'sheet_name':k,
+                        'update_details':v}
+            batch_update_excel_openpyxl(**para_update)
 
     #6.保存日志
-    result_verify['底稿路径']=path_workingpaper
-
-    if single_save==True or single_save is None:
-        save_path = replace_last_segment(file_path=path_workingpaper,new_segment='原文件合并日志_auto')
-        os.makedirs(save_path, exist_ok=True)
-        index=path_workingpaper.split('\\')[-1]
-        path_log_save=os.path.join(save_path,f'{index}_原报表_日志.xlsx')
-        result_verify.to_excel(path_log_save,index=False)
-    else:
+    if '原报表' not in dfs.keys():
+        result_verify=pd.DataFrame()
         path_log_save=None
-        pass
+    else:
+        result_verify['底稿路径']=path_workingpaper
+        if single_save==True or single_save is None:
+            save_path = replace_last_segment(file_path=path_workingpaper,new_segment='原文件合并日志_auto')
+            os.makedirs(save_path, exist_ok=True)
+            index=path_workingpaper.split('\\')[-1]
+            path_log_save=os.path.join(save_path,f'{index}_原报表_日志.xlsx')
+            result_verify.to_excel(path_log_save,index=False)
+        else:
+            path_log_save=None
+            pass
 
     return result_verify,path_log_save
 
@@ -89,7 +101,7 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save=True
 #     list_workingpaper_path=list_workingpaper_path
 
 #     #多线程
-#     pool = ThreadPool(6)
+#     pool = Pool(6)
 #     df_list=[df_mapping for i in range(len(list_acct_path))]
 #     arguments=list(zip(df_list,list_acct_path,list_workingpaper_path))
 #     result=pool.starmap(main_flow,arguments)
@@ -135,18 +147,20 @@ def loop_main_flow(df_mapping,list_acct_path,list_workingpaper_path):
 if __name__ == '__main__':
 
     
-    path_mapping=r"D:\audit_project\AUTO_TB\映射模板设计.xlsx"
+    # path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_v20250118.xlsx"
 
 
     #单线程
+    path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_v20250118.xlsx"
     # path_account_balance=r"D:\audit_project\AUTO_TB\科目余额表示例.xlsx"
-    # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
+    path_account_balance=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024科目余额表\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
+    path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
     
-    path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\科目余额表\北京博朗生.xlsx"
-    path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.33 北京博朗生科技有限公司 2024.xlsx"
+    # path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\科目余额表\北京博朗生.xlsx"
+    # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.33 北京博朗生科技有限公司 2024.xlsx"
 
     df_mapping=MappingReader(path=path_mapping,header=1).read_mapping_table()
-    main_flow(df_mapping,path_account_balance,path_workingpaper) 
+    main_flow(df_mapping=df_mapping,path_account_balance=path_account_balance,path_workingpaper=path_workingpaper,single_save=True,engine='excel') 
     print('Done')
 
     #循环 先走遍历的逻辑
