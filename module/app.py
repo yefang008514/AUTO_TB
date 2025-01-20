@@ -33,10 +33,19 @@ def main_streamlit():
 
     if uploaded_mapping:
         df_mapping = MappingReader(path=uploaded_mapping, header=1).read_mapping_table()
+
+        #1.如果不需要期初，更新df_mapping
         if mode_start=="否":
             df_mapping=clean_start_value(df_mapping)
         else:
             pass
+        #2.如果需要特定sheet执行，更新df_mapping
+        sheet_list = ['否']+list(df_mapping.keys())
+        sheet_selected = st.selectbox("执行特定sheet?", sheet_list)
+        if sheet_selected!='否':
+            df_mapping={sheet_selected:df_mapping[sheet_selected]}
+        else:
+            pass   
 
         if mode == "单文件执行":
             st.subheader("单文件执行模式")
@@ -48,8 +57,11 @@ def main_streamlit():
                 if path_account_balance is not None and path_workingpaper is not None:
                     try:
                         result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine)
-                        st.success("执行完成！日志已生成。")
-                        st.dataframe(result)
+                        if len(result)>0:
+                            st.success("处理完成! 日志保存在: " + log_file_path)
+                            st.dataframe(result)
+                        else:
+                            st.success("处理完成!")
                     except Exception as e:
                         st.error(f"执行失败！错误信息：{e}")
                 else:
