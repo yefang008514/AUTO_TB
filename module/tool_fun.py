@@ -2,6 +2,8 @@ import os
 import duckdb
 import xlwings as xw
 import pandas as pd
+import os,sys
+sys.path.append(os.getcwd())
 
 '''1.获取文件夹下所有文件'''
 def get_file_list(folder_path):

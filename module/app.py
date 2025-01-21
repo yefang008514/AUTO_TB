@@ -6,6 +6,7 @@ sys.path.append(os.getcwd())
 
 from module.main_flow import main_flow
 from module.read_data import MappingReader,clean_start_value
+from module.read_raw_report import mian_flow_report
 
 
 
@@ -23,9 +24,9 @@ def main_streamlit():
     !!!!强烈建议使用本工具前备份原始文件!!!!  
     ''')
 
-    mode = st.sidebar.selectbox("选择模式", ["单文件执行", "批量循环执行"])
+    mode = st.sidebar.selectbox("选择模式", ["单文件执行", "批量循环执行","从财务报告更新试算<原报表>"])
     engine = st.selectbox("选择引擎", ["excel", "wps","openpyxl"])
-    mode_start = st.selectbox("是否需要期初", ["是", "否"])
+    mode_start = st.selectbox("是否需要期初", ["否", "是"])
 
     single_save=True
 
@@ -95,6 +96,28 @@ def main_streamlit():
                             st.error(f"执行失败！错误信息：{e}")
                 else:
                     st.error("请上传映射关系文件！")
+        
+        elif mode == "从财务报告更新试算<原报表>":
+            st.subheader("从财务报告更新试算<原报表>")
+
+            if st.button("执行"):
+                if uploaded_finance_report:
+                    df_relation_report = st.file_uploader("请上传【试算财务报告关系表】", type=['xlsx','xlsm'])
+
+                    list_finance_report_path = df_relation_report['财务报告路径'].tolist()
+                    list_workingpaper_path = df_relation_report['试算底稿路径'].tolist()
+                    for i in range(len(list_finance_report_path)):
+                        try:
+                            path_report = list_finance_report_path[i]
+                            path_workingpaper = list_workingpaper_path[i]
+                            result=mian_flow_report(df_mapping,path_report,path_workingpaper,engine)
+                            #显示进度条
+                            st.write(f'''正在处理文件：{path_workingpaper},执行进度：{i+1}/{len(list_finance_report_path)}''')
+                        except Exception as e:
+                            st.error(f"执行失败！错误信息：{e}")
+                else:
+                    st.error("请上传映射关系文件！")
+                    
 
 if __name__ == '__main__':
 

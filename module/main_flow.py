@@ -61,14 +61,14 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
             #如果E31->E49单元格不为0，则更新E30为0
             cell_list_1=['E'+str(m) for m in range(31,50)]
             flag_1=new_v[new_v['单元格'].isin(cell_list_1)]['金额'].sum()!=0
-            cell_list_2=['E'+str(l) for l in range(141,148)]
-            #如果E141->E147单元格不为0，则更新E140为0
+            cell_list_2=['E'+str(l) for l in range(142,148)]
+            #如果E142->E147单元格不为0，则更新E141为0
             flag_2=new_v[new_v['单元格'].isin(cell_list_2)]['金额'].sum()!=0
             if flag_1:
                 idx_update=new_v.query("单元格=='E30'").index
                 new_v.loc[idx_update,'金额']=0
             elif flag_2:
-                idx_update=new_v.query("单元格=='E140'").index
+                idx_update=new_v.query("单元格=='E141'").index
                 new_v.loc[idx_update,'金额']=0  
         else:
             new_v=v
@@ -127,11 +127,11 @@ def loop_main_flow(df_mapping,list_acct_path,list_workingpaper_path):
 if __name__ == '__main__':
 
     
-    # path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_v20250118.xlsx"
+    path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_v20250118.xlsx"
 
 
     #单线程
-    path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_费用.xlsx"
+    # path_mapping=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算单元格映射表_东方基因_费用.xlsx"
     # path_account_balance=r"D:\audit_project\AUTO_TB\科目余额表示例.xlsx"
     # path_account_balance=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024科目余额表\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
     # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
@@ -139,9 +139,11 @@ if __name__ == '__main__':
     # path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\科目余额表\北京博朗生.xlsx"
     # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\东方基因\2024年试算\1.33 北京博朗生科技有限公司 2024.xlsx"
 
-    path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\FY24\科目余额表_FY24_树状展开\1.02 南京长健生物科技有限公司 2024.xlsx"
-    path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.02 南京长健生物科技有限公司 2024.xlsx"
+    # path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\FY24\科目余额表_FY24_树状展开\1.02 南京长健生物科技有限公司 2024.xlsx"
+    # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.02 南京长健生物科技有限公司 2024.xlsx"
 
+    # path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\FY24\科目余额表_FY24_树状展开\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
+    # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
 
     df_mapping=MappingReader(path=path_mapping,header=1).read_mapping_table()
     main_flow(df_mapping=df_mapping,path_account_balance=path_account_balance,path_workingpaper=path_workingpaper,single_save=True,engine='excel') 

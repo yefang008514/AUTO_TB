@@ -144,8 +144,10 @@ def Data_Loader(path_mapping,path_account_balance):
 def clean_start_value(df_mapping):
     #去掉含期初余额的行
     result_1={k:v[~v['金额列'].fillna('').str.contains('期初余额')] for k,v in df_mapping.items()}
-    #去掉没有账户代码的行
-    result={k:v[(v['账户代码'].notnull())&(v['金额列'].notnull())] for k,v in result_1.items()}
+    #去掉没有账户代码的行 原报表特殊处理不要去掉金额列
+    result={k:v[(v['账户代码'].notnull())&(v['金额列'].notnull())] for k,v in result_1.items() if k!='原报表'}
+    if '原报表' in result_1.keys():
+        result['原报表']=result_1['原报表']
     return result
 
 

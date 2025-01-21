@@ -9,9 +9,6 @@ import numpy as np
 from win32com.client import Dispatch 
 from module.tool_fun import *
 from module.read_raw_report import read_report
-'''异步读数据'''
-
-
 
 
 '''处理原报表'''
@@ -20,16 +17,22 @@ if __name__ == '__main__':
     db_path=r"D:\audit_project\AUTO_TB\DB\东方生物_FY24.duckdb" 
 
     re_b=[]
+    re_i=[]
     for file in os.listdir(folder):
         if file.endswith('.xlsx') and '杭州公健知识产权' not in file and '财务分析报表' not in file:
             file_path=os.path.join(folder,file)
-            df_b=read_balance_sheet(file_path)
+            df_b,df_i=read_report(file_path)
             re_b.append(df_b)
+            re_i.append(df_i)
     df_b=pd.concat(re_b,ignore_index=True)
-    write_data_toduckdb(df_b,'资产负债表',db_path)
+    df_i=pd.concat(re_i,ignore_index=True)
 
+    write_data_toduckdb(df_b,'资产负债表',db_path)
+    write_data_toduckdb(df_i,'利润表',db_path)
+    print('done')
 
 
     ######################################################################################
 
     
+
