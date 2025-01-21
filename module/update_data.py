@@ -127,28 +127,31 @@ def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
     End Sub
 
     '''
-    if engine is None or engine=='wps':     # xlwings 打开 wps 
-        xl = xw._xlwindows.COMRetryObjectWrapper(Dispatch("Ket.Application")) 
-        impl = xw._xlwindows.App(visible=False, add_book=False, xl=xl)     
-        with xw.App(visible=visible, add_book=False, impl=impl) as app:
-            wb=app.books.open(path)
-            vb_object = wb.api.VBProject.VBComponents.Add(1)  # 1 表示标准模块
-            vb_object.CodeModule.AddFromString(code_vba)
-            wb.macro("BatchUpdate")(data,sheet_name)
-            wb.api.VBProject.VBComponents.Remove(vb_object)
-            wb.save()
-            if auto_close==True or auto_close is None:
-                wb.close()
-    else:     # xlwings 打开 excel
-        with xw.App(visible=visible) as app:
-            wb=app.books.open(path)
-            vb_object = wb.api.VBProject.VBComponents.Add(1)  # 1 表示标准模块
-            vb_object.CodeModule.AddFromString(code_vba)
-            wb.macro("BatchUpdate")(data,sheet_name)
-            wb.api.VBProject.VBComponents.Remove(vb_object)
-            wb.save()
-            if auto_close==True or auto_close is None:
-                wb.close()
+    try:
+        if engine is None or engine=='wps':     # xlwings 打开 wps 
+            xl = xw._xlwindows.COMRetryObjectWrapper(Dispatch("Ket.Application")) 
+            impl = xw._xlwindows.App(visible=False, add_book=False, xl=xl)     
+            with xw.App(visible=visible, add_book=False, impl=impl) as app:
+                wb=app.books.open(path)
+                vb_object = wb.api.VBProject.VBComponents.Add(1)  # 1 表示标准模块
+                vb_object.CodeModule.AddFromString(code_vba)
+                wb.macro("BatchUpdate")(data,sheet_name)
+                wb.api.VBProject.VBComponents.Remove(vb_object)
+                wb.save()
+                if auto_close==True or auto_close is None:
+                    wb.close()
+        else:     # xlwings 打开 excel
+            with xw.App(visible=visible) as app:
+                wb=app.books.open(path)
+                vb_object = wb.api.VBProject.VBComponents.Add(1)  # 1 表示标准模块
+                vb_object.CodeModule.AddFromString(code_vba)
+                wb.macro("BatchUpdate")(data,sheet_name)
+                wb.api.VBProject.VBComponents.Remove(vb_object)
+                wb.save()
+                if auto_close==True or auto_close is None:
+                    wb.close()
+    except Exception as e:
+        print(f"更新失败: {e}")
 
 
 

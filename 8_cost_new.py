@@ -48,13 +48,13 @@ if __name__ == '__main__':
         df_cost_2=df_cost_2.applymap(lambda x:"'"+str(x) if x is not None else None)
         wb_template.close()
 
-    path_workingpaper=r"D:\audit_project\AUTO_TB\东方生物\FY24\试算科余路径关系表_250120.xlsm"
+    path_workingpaper=r"D:\audit_project\AUTO_TB\试算单元格映射表\试算科余路径关系表_250121_temp.xlsm"
     df_path=pd.read_excel(path_workingpaper,sheet_name='匹配结果',header=0,dtype=object)
     path_list=df_path['试算底稿路径'].tolist()
     
     for path in path_list:
         xl = xw._xlwindows.COMRetryObjectWrapper(Dispatch("Ket.Application")) 
-        impl = xw._xlwindows.App(visible=True, add_book=False, xl=xl)     
+        impl = xw._xlwindows.App(visible=False, add_book=False, xl=xl)     
         with xw.App(visible=False, add_book=False, impl=impl) as app:
             print(f'正在处理{path}')
             wb=app.books.open(path)

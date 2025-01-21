@@ -76,7 +76,7 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
                         'sheet_name':k,
                         'update_details':new_v,
                         'engine':engine,
-                        'visible':False,
+                        'visible':False,# False True
                         'auto_close':True}
         if engine in ['wps','excel']:
             VBA_update_data(**para_update)
