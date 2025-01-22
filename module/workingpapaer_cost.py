@@ -5,9 +5,10 @@ from openpyxl import load_workbook
 from warnings import filterwarnings
 import time
 from win32com.client import Dispatch 
-from multiprocessing import Pool,freeze_support
+from multiprocessing import Pool
 import re
-# from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing.dummy import Pool as ThreadPool
+from concurrent.futures import ProcessPoolExecutor
 import os,sys
 sys.path.append(os.getcwd())
 from module.tool_fun import get_file_list
@@ -149,8 +150,7 @@ def paste_workingpaper(df,path_paper,sheet_name,first_cell,engine=None,path_save
 def read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header):
     #进程池 
     cpu_count = os.cpu_count()
-    pool=Pool(processes=cpu_count-2)
-
+    
     temp_path_list = get_file_list(path)
     # 默认读取有'公司';非日志;非打开的excel文件
     path_list = [i for i in temp_path_list if ('公司' in i and '日志' not in i and '~$' not in i and '小合并' not in i)]
@@ -159,17 +159,20 @@ def read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header):
     end_cell_list=[end_cell for i in range(len(path_list))]
     engine_list=[engine for i in range(len(path_list))]
     header_list=[header for i in range(len(path_list))]
-
     args=zip(path_list,sheet_name_list,start_cell_list,end_cell_list,engine_list,header_list)
-    result=pool.starmap(get_data_from_paper,args)
+    # with Pool(processes=cpu_count) as pool:
+    #     result=pool.starmap(get_data_from_paper,args)
+    # with ProcessPoolExecutor(max_workers=cpu_count) as executor:
+    #     result=list(executor.starmap(get_data_from_paper,args))
+    with ThreadPool(processes=cpu_count) as pool:
+        result=pool.starmap(get_data_from_paper,args)
     df=pd.concat(result)
-    pool.close()
+
     return df
 
 '''自定义取数粘贴'''
 def custom_read_and_paste_main(path_from,sheet_name_from,start_cell_from,end_cell_from,
-                               path_to,sheet_name_to,start_cell_to,engine,path_save):
-    freeze_support()                           
+                               path_to,sheet_name_to,start_cell_to,engine,path_save):                        
     para_get_data={
         'path': path_from,
         'sheet_name': sheet_name_from,
@@ -251,16 +254,22 @@ def get_cost_data(path):
 
 '''1.批量读取数据'''
 def get_cost_data_multi(path):
-    freeze_support()
+
     cpu_count = os.cpu_count()
     path=path
-    pool=Pool(processes=cpu_count-2)
-
+    
     temp_path_list = get_file_list(path)
     path_list = [i for i in temp_path_list if ('公司' in i and '日志' not in i and '~$' not in i and '小合并' not in i)] #默认读取有'公司';非日志;非打开的excel文件
     args=path_list
-    results=pool.map(get_cost_data,args) #返回各公司字典[result1,result2,result3]
-    pool.close()
+    # 进程池
+    # with Pool(processes=cpu_count-2) as pool:
+        # results=executor.map(get_cost_data,args) #返回各公司字典[result1,result2,result3]
+
+    # with ProcessPoolExecutor(max_workers=cpu_count) as executor:
+    #     results=list(executor.map(get_cost_data,args)) #返回各公司字典[result1,result2,result3]
+
+    with ThreadPool(processes=cpu_count) as pool:
+        results=pool.map(get_cost_data,args) #返回各公司字典[result1,result2,result3]
 
     return results
 
@@ -366,12 +375,9 @@ def gen_cost_workingpaper(path_data,path_paper,path_save):
     path_data=path_data
     path_paper=path_paper
     path_save=path_save
+
     #1.批量读取数据
     results=get_cost_data_multi(path_data)
-
-    # '''调试用'''
-    # results[0]['审定表_管理费用'].to_excel(r'D:\audit_project\AUTO_TB\DATA\test_审定表.xlsx')
-    results[0]['审定表_研发费用'].to_excel(r'D:\audit_project\AUTO_TB\DATA\test_审定表.xlsx')
 
     #2.粘贴数据到底稿
     paste_data(results,path_paper,path_save)
@@ -383,10 +389,13 @@ if __name__ == '__main__':
 
     '''费用底稿贴数'''
     #参数设置
+    start_time = time.time()
     path_data = r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新"
-    path_paper = r"D:\audit_project\AUTO_TB\DATA\期间费用模板_empty.xlsx"
-    path_save = r"D:\audit_project\AUTO_TB\DATA\期间费用_FY24_东方生物.xlsx"
+    path_paper = r"D:\audit_project\AUTO_TB\示例数据\DATA\期间费用模板_empty.xlsx"
+    path_save = r"D:\audit_project\AUTO_TB\示例数据\DATA\期间费用_FY24_东方生物.xlsx"
     gen_cost_workingpaper(path_data,path_paper,path_save)
+    end_time = time.time()
+    print(f'耗时：{round(end_time-start_time,2)}秒')
     print('done')
 
 
