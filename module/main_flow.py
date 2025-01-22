@@ -95,7 +95,7 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
         if single_save==True or single_save is None:
             save_path = replace_last_segment(file_path=path_workingpaper,new_segment='原文件合并日志_auto')
             os.makedirs(save_path, exist_ok=True)
-            index=path_workingpaper.split('\\')[-1]
+            index=path_workingpaper.split('\\')[-1].replace('.xlsx','')
             path_log_save=os.path.join(save_path,f'{index}_原报表_日志.xlsx')
             result_verify.to_excel(path_log_save,index=False)
         else:

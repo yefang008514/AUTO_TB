@@ -16,4 +16,6 @@ build/
 
 更新试算_原报表/
 
-/DB
+DB/
+
+run_test_app.py

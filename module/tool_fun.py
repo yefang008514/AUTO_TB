@@ -5,7 +5,7 @@ import pandas as pd
 import os,sys
 sys.path.append(os.getcwd())
 
-'''1.获取文件夹下所有文件'''
+'''1.获取文件夹下所有xlsx,xls,csv文件 '''
 def get_file_list(folder_path):
     file_list = []
     for root, dirs, files in os.walk(folder_path):

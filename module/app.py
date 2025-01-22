@@ -108,7 +108,6 @@ def main_streamlit():
                             path_report = list_finance_report_path[i]
                             path_workingpaper = list_workingpaper_path[i]
                             result=main_flow_report(df_mapping,path_report,path_workingpaper,engine)
-                            time.sleep(0.5)
                             #显示进度条
                             st.write(f'''正在处理文件：{path_workingpaper},执行进度：{i+1}/{len(list_finance_report_path)}''')
                             st.progress((i+1) / len(list_finance_report_path))
