@@ -72,6 +72,8 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
                 new_v.loc[idx_update,'金额']=0  
         else:
             new_v=v
+
+        #更新试算底稿
         try:
             para_update={'path':path_workingpaper,
                             'sheet_name':k,
