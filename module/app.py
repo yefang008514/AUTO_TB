@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import time
 from multiprocessing import freeze_support
+import pathlib
+
 import os,sys
 sys.path.append(os.getcwd())
 
@@ -9,13 +11,6 @@ from module.main_flow import main_flow
 from module.read_data import MappingReader,clean_start_value
 from module.read_raw_report import main_flow_report
 from module.workingpapaer_cost import gen_cost_workingpaper,custom_read_and_paste_main,read_excel_multi
-
-
-# 获取封装后的文件路径
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
                     
 
 if __name__ == '__main__':
@@ -142,10 +137,11 @@ if __name__ == '__main__':
         if mode == "1.导出[销售、管理、研发费用底稿]":
             st.subheader("导出[销售、管理、研发费用底稿]")
             #初始化路径
+            
             path_data = st.text_input("请输入【试算底稿文件夹】路径:")
-            # path_paper = resource_path(r'module\期间费用模板_empty.xlsx')#相对路径转换成绝对路径
-            # path_paper = resource_path(r'期间费用模板_empty.xlsx')#相对路径转换成绝对路径
-            path_paper = st.text_input("请输入【期间费用模板】路径:")
+            path_app = pathlib.Path(__file__).parent.resolve()#获取当前文件所在目录
+            path_paper = os.path.join(path_app,r'期间费用模板_empty.xlsx')#相对路径转换成绝对路径
+            # path_paper = st.text_input("请输入【期间费用模板】路径:")
             path_save = st.text_input("请输入底稿保存路径:")
 
             if st.button("执行"):

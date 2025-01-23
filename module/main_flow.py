@@ -72,19 +72,22 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
                 new_v.loc[idx_update,'金额']=0  
         else:
             new_v=v
-        para_update={'path':path_workingpaper,
-                        'sheet_name':k,
-                        'update_details':new_v,
-                        'engine':engine,
-                        'visible':False,# False True
-                        'auto_close':True}
-        if engine in ['wps','excel']:
-            VBA_update_data(**para_update)
-        elif engine=='openpyxl':
+        try:
             para_update={'path':path_workingpaper,
-                        'sheet_name':k,
-                        'update_details':new_v}
-            batch_update_excel_openpyxl(**para_update)
+                            'sheet_name':k,
+                            'update_details':new_v,
+                            'engine':engine,
+                            'visible':False,# False True
+                            'auto_close':True}
+            if engine in ['wps','excel']:
+                VBA_update_data(**para_update)
+            elif engine=='openpyxl':
+                para_update={'path':path_workingpaper,
+                            'sheet_name':k,
+                            'update_details':new_v}
+                batch_update_excel_openpyxl(**para_update)
+        except Exception as e:
+            raise ValueError(f'更新{path_workingpaper}失败,错误信息：{e}')
 
     #6.保存日志
     if '原报表' not in dfs.keys():

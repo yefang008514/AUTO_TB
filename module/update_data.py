@@ -1,5 +1,6 @@
 import xlwings as xw 
 from win32com.client import Dispatch 
+import pythoncom
 import ctypes
 import pandas as pd
 from openpyxl import load_workbook
@@ -66,6 +67,7 @@ def xlwings_update_data(path,sheet_name:str,update_details,engine,visible,auto_c
     if is_file_open(path):
         raise Exception(f"{path}文件已打开，请关闭文件后重试。")
 
+
     if engine is None or engine=='wps':
         # xlwings 打开 wps 
         xl = xw._xlwindows.COMRetryObjectWrapper(Dispatch("Ket.Application")) 
@@ -88,6 +90,7 @@ def xlwings_update_data(path,sheet_name:str,update_details,engine,visible,auto_c
             wb.save()
             if auto_close==True or auto_close is None:
                 wb.close()
+    
 
 
 def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
@@ -101,6 +104,8 @@ def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
     path=path 
     data=update_details[['单元格','金额']].values.tolist()
     visible=visible
+
+    pythoncom.CoInitialize()  # 初始化 COM 库 避免(-2147221008, '尚未调用 CoInitialize。', None, None)问题
 
     if is_file_open(path):
         raise Exception(f"{path}文件已打开，请关闭文件后重试。")
@@ -140,7 +145,7 @@ def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
                 wb.save()
                 if auto_close==True or auto_close is None:
                     wb.close()
-        else:     # xlwings 打开 excel
+        else:   # xlwings 打开 excel
             with xw.App(visible=visible) as app:
                 wb=app.books.open(path)
                 vb_object = wb.api.VBProject.VBComponents.Add(1)  # 1 表示标准模块
@@ -152,6 +157,8 @@ def VBA_update_data(path,sheet_name,update_details,engine,visible,auto_close):
                     wb.close()
     except Exception as e:
         print(f"更新失败: {e}")
+    
+    pythoncom.CoUninitialize()  # 释放 COM 库
 
 
 
