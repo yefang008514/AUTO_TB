@@ -153,7 +153,7 @@ def read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header):
     
     temp_path_list = get_file_list(path)
     # 默认读取有'公司';非日志;非打开的excel文件 文件名称不带合并字样
-    path_list = [i for i in temp_path_list if ('公司' in i and '日志' not in i and '~$' not in i and '合并' not in i.split('\\')[-1])]
+    path_list = [i for i in temp_path_list if (('公司' in i or '1.01 HEALGEN SCIENTIFIC LLC 2024CNY' in i) and '日志' not in i and '~$' not in i and '合并' not in i.split('\\')[-1])]
     sheet_name_list=[sheet_name for i in range(len(path_list))]
     start_cell_list=[start_cell for i in range(len(path_list))]
     end_cell_list=[end_cell for i in range(len(path_list))]

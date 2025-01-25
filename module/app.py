@@ -167,6 +167,7 @@ if __name__ == '__main__':
             if st.button("执行"):
                 try:
                     start_time = time.time()
+                    #这里有默认筛选条件 可以根据条件修改
                     df=read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header)
                     df.to_excel(path_save,index=False)
                     end_time = time.time()
