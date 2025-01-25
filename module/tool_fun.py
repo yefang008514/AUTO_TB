@@ -5,12 +5,12 @@ import pandas as pd
 import os,sys
 sys.path.append(os.getcwd())
 
-'''1.获取文件夹下所有xlsx,xls,csv文件 '''
+'''1.获取文件夹下所有xlsx '''
 def get_file_list(folder_path):
     file_list = []
     for root, dirs, files in os.walk(folder_path):
         for file in files:
-            if (file.endswith('.xlsx') or file.endswith('.xls') or file.endswith('.csv')) and '~$' not in file:
+            if file.endswith('.xlsx')  and '~$' not in file:
                 file_list.append(os.path.join(root, file))
             else:
                 continue

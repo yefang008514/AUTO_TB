@@ -82,8 +82,8 @@ def get_data_from_paper(path,sheet_name,start_cell,end_cell,engine,header=None):
 
     #把公司名放到前面那列
     raw_col=df.columns.tolist()
-    df['公司']=company_name
-    colnames=['公司']+raw_col
+    df['文件名']=company_name
+    colnames=['文件名']+raw_col
     df=df[colnames].copy()
 
     return df
@@ -152,18 +152,15 @@ def read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header):
     cpu_count = os.cpu_count()
     
     temp_path_list = get_file_list(path)
-    # 默认读取有'公司';非日志;非打开的excel文件 文件名称不带合并字样
-    path_list = [i for i in temp_path_list if ('公司' in i and '日志' not in i and '~$' not in i and '合并' not in i.split('\\')[-1])]
+    # 所有文件都会读取
+    path_list = temp_path_list
     sheet_name_list=[sheet_name for i in range(len(path_list))]
     start_cell_list=[start_cell for i in range(len(path_list))]
     end_cell_list=[end_cell for i in range(len(path_list))]
     engine_list=[engine for i in range(len(path_list))]
     header_list=[header for i in range(len(path_list))]
     args=zip(path_list,sheet_name_list,start_cell_list,end_cell_list,engine_list,header_list)
-    # with Pool(processes=cpu_count) as pool:
-    #     result=pool.starmap(get_data_from_paper,args)
-    # with ProcessPoolExecutor(max_workers=cpu_count) as executor:
-    #     result=list(executor.starmap(get_data_from_paper,args))
+
     with ThreadPool(processes=cpu_count) as pool:
         result=pool.starmap(get_data_from_paper,args)
     df=pd.concat(result)
