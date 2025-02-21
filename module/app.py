@@ -186,16 +186,20 @@ if __name__ == '__main__':
         elif mode == "3.导出往来数据":
             st.subheader("导出往来数据")
             st.markdown('''
-            该功能能够自动提取试算底稿的[应收账款、应付账款、其他应收、其他应付、其他非流动资产]的所有明细,  
+            该功能能够自动提取试算底稿的[应收账款、应付账款、CF2、预收账款、预付账款、其他非流动资产]的所有明细,  
             自动剔除0余额列和不相关列,将文件夹下所有公司的底稿合并输出到同一个excel文件中,  
+            !!!默认不读取带**合并**字样的文件!!!
             !!!该功能目前仅针对新版试算底稿（参考FY24华峰化学、FY24东方生物）!!!  
             同一个保存路径文件夹默认覆盖之前的合并结果  
             ''')
             source_path=st.text_input("请输入【试算底稿文件夹】路径:")
             save_folder=st.text_input("请输入保存文件夹:")
+            mode=st.selectbox("选择模式", ["非穿透","穿透文件夹"])
+            st.markdown('''若选择：'穿透文件夹',会读取【试算底稿文件夹】下所有文件及其子文件夹所有文件  
+            若选择：'非穿透',则只读取【试算底稿文件夹】下的文件''')
             if st.button("执行"):
                 try:
-                    main_merge_raw_wb(source_path,save_folder)
+                    main_merge_raw_wb(source_path,save_folder,mode)
                 except Exception as e:
                     st.error(f"执行失败！错误信息：{e}")
 
@@ -204,7 +208,7 @@ if __name__ == '__main__':
     st.sidebar.write("---")
     st.sidebar.write('''
     copyright
-    © [20250122] [立信会计师事务所浙江分所 21部]。保留所有权利。
+    © [20250221] [立信会计师事务所浙江分所 21部]。保留所有权利。
     使用本工具遇到任何问题，请联系：[yefang@bdo.com.cn]
     ''')
 

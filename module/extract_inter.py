@@ -10,16 +10,19 @@ import streamlit as st
 
 
 '''获取文件夹下所有xlsx文件 '''
-def get_file_list(folder_path):
+def get_file_list(folder_path,mode):
     file_list = []
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            if file.endswith('.xlsx') and '~$' not in file and '合并' not in file and '日志' not in file:
-                file_list.append(os.path.join(root, file))
-            else:
-                continue
-    # path_list = os.listdir(folder_path)
-    # file_list=[os.path.join(folder_path,file) for file in path_list if file.endswith('.xlsx') and '~$' not in file and '合并' and '日志' not in file]
+    if mode=='穿透文件夹':
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                if (file.endswith('.xlsx') or file.endswith('.xls') or file.endswith('.xlsm')) and '~$' not in file and '合并' not in file and '日志' not in file:
+                    file_list.append(os.path.join(root, file))
+                else:
+                    continue
+    elif mode=='非穿透':
+        path_list = os.listdir(folder_path)
+        file_list=[os.path.join(folder_path,file) for file in path_list if (file.endswith('.xlsx') or file.endswith('.xls') or file.endswith('.xlsm')) and '~$' not in file and '合并' not in file and '日志' not in file]
+    
     return file_list
 
 
@@ -50,7 +53,8 @@ def extract_sheet_to_df_dict(source_file):
             result_dict[sheet_name]=df # 存入字典 sheet_name 为往来科目名称 
 
         except Exception as e:
-            print(f"处理{source_file}的{sheet_name}遇到问题：{e}请检查")
+            result_dict[sheet_name]=pd.DataFrame()
+            # raise(Exception(f"处理{source_file}的{sheet_name}遇到问题：{e}请检查"))
     
     return result_dict
 
@@ -64,7 +68,8 @@ def clean_df_cf2(df):
     df_oar=df.iloc[3:,:][col_oar]
     df_oar=df_oar[~df_oar[12].isin(['款项性质','合计','勾稽核对'])]
     df_oar=df_oar[df_oar[12].notnull()]#款项性质
-    df_oar=df_oar[(df_oar[13].notnull())|(df_oar[14].notnull())|(df_oar[15].notnull())] # 期初余额or借方发生额or贷方发生额 同时不为空
+    df_oar=df_oar[(df_oar[13].notnull())|(df_oar[14].notnull())|(df_oar[15].notnull())] # 期初余额or借方发生额or贷方发生额 不同时为空
+    df_oar=df_oar[df_oar[16]!=0]
     #重命名表头
     df_oar.columns=['文件名',
                     '名称',
@@ -93,6 +98,7 @@ def clean_df_cf2(df):
     df_oap=df_oap[~df_oap[31].isin(['款项性质','合计','勾稽核对'])]
     df_oap=df_oap[df_oap[31].notnull()]
     df_oap=df_oap[(df_oap[32].notnull())|(df_oap[33].notnull())|(df_oap[34].notnull())] # 期初余额or借方发生额or贷方发生额 不为空
+    df_oap=df_oap[df_oap[35]!=0]
     #重命名表头
     df_oap.columns=['文件名',
                     '名称',
@@ -225,7 +231,7 @@ def clean_df(df,sheet_name):
     return df
 
 # 批量从原始Excel文件提取往来并合并到新文件
-def main_merge_raw_wb(source_path,save_folder):
+def main_merge_raw_wb(source_path,save_folder,mode):
     
     filterwarnings('ignore')  # 忽略警告信息
     source_path=source_path
@@ -234,7 +240,7 @@ def main_merge_raw_wb(source_path,save_folder):
     os.makedirs(save_folder,exist_ok=True)
 
     #1.获取excel文件列表
-    file_list = get_file_list(source_path) # 默认不读打开的和有"合并"字样 的文件
+    file_list = get_file_list(source_path,mode) # 默认不读打开的和有"合并"字样 的文件
     args=zip(file_list)
 
     #2.批量提取文件的各往来科目{'sheet_name':df,}到列表   
