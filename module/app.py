@@ -141,7 +141,6 @@ if __name__ == '__main__':
             path_data = st.text_input("请输入【试算底稿文件夹】路径:")
             path_app = pathlib.Path(__file__).parent.resolve()#获取当前文件所在目录
             path_paper = os.path.join(path_app,r'期间费用模板_empty.xlsx')#相对路径转换成绝对路径
-            # path_paper = st.text_input("请输入【期间费用模板】路径:")
             path_save = st.text_input("请输入底稿保存路径:")
 
             if st.button("执行"):
@@ -155,12 +154,20 @@ if __name__ == '__main__':
         
         elif mode == "2.自定义批量导出数据":
             st.subheader("自定义批量导出数据")
+            st.markdown('''
+            该功能默认将[文件夹]中所有**xlsx文件**合并，文件名称会在合并表格的**第一列**,  
+            若某个xlsx文件没有某个sheet会自动跳过，  
+            请注意要导出的表头的格式是否一致，不一致时会导致合并结果不符合预期
+            默认保存路径在输入的文件夹路径的[合并结果.xlsx]下  
+            ''')
             #初始化路径
-            path = st.text_input("请输入【试算底稿文件夹】路径:")
+            path = st.text_input("请输入【文件夹】路径:")
             sheet_name = st.text_input("请输入sheet名称:")
             start_cell = st.text_input("请输入开始单元格:")
             end_cell = st.text_input("请输入结束单元格:")
-            path_save = st.text_input("请输入导出数据保存路径:")
+            time_stamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+            path_save = os.path.join(path,f'合并结果_{time_stamp}.xlsx')
+
             engine = 'openpyxl'
             header = None
 
