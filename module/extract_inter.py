@@ -14,10 +14,12 @@ def get_file_list(folder_path):
     file_list = []
     for root, dirs, files in os.walk(folder_path):
         for file in files:
-            if file.endswith('.xlsx') and '~$' not in file and '合并' not in file:
+            if file.endswith('.xlsx') and '~$' not in file and '合并' not in file and '日志' not in file:
                 file_list.append(os.path.join(root, file))
             else:
                 continue
+    # path_list = os.listdir(folder_path)
+    # file_list=[os.path.join(folder_path,file) for file in path_list if file.endswith('.xlsx') and '~$' not in file and '合并' and '日志' not in file]
     return file_list
 
 
