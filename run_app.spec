@@ -31,7 +31,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='试算填写辅助工具_v20250122',
+    name='试算填写辅助工具_v20250221',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

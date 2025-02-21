@@ -4,7 +4,7 @@ import openpyxl
 from openpyxl import load_workbook
 from warnings import filterwarnings
 import os 
-from multiprocessing import Pool
+from multiprocessing.dummy import Pool as ThreadPool
 import time
 import streamlit as st
 
@@ -236,8 +236,9 @@ def main_merge_raw_wb(source_path,save_folder):
     args=zip(file_list)
 
     #2.批量提取文件的各往来科目{'sheet_name':df,}到列表   
+    st.write("开始提取试算底稿数据,请耐心等待...")
     cpu_count = os.cpu_count()
-    with Pool(processes=cpu_count) as pool:
+    with ThreadPool(processes=cpu_count) as pool:
         dict_list=pool.starmap(extract_sheet_to_df_dict, args)
     
     #3.合并相同key的dataframe
