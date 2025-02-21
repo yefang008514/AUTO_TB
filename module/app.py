@@ -11,6 +11,7 @@ from module.main_flow import main_flow
 from module.read_data import MappingReader,clean_start_value
 from module.read_raw_report import main_flow_report
 from module.workingpapaer_cost import gen_cost_workingpaper,custom_read_and_paste_main,read_excel_multi
+from module.extract_inter import main_merge_raw_wb
                     
 
 if __name__ == '__main__':
@@ -132,7 +133,7 @@ if __name__ == '__main__':
         st.title("从试算底稿提取数据")
         # 模拟子侧边栏
         with st.sidebar.expander("请选择子功能"):
-            mode = st.radio(" ", ["1.导出[销售、管理、研发费用底稿]", "2.自定义批量导出数据"])
+            mode = st.radio(" ", ["1.导出[销售、管理、研发费用底稿]", "2.自定义批量导出数据","3.导出往来数据"])
 
         if mode == "1.导出[销售、管理、研发费用底稿]":
             st.subheader("导出[销售、管理、研发费用底稿]")
@@ -181,6 +182,23 @@ if __name__ == '__main__':
                     st.success(f"导出完成！耗时：{round(end_time-start_time,2)}秒,详见{path_save}")
                 except Exception as e:
                     st.error(f"执行失败！错误信息：{e}")
+
+        elif mode == "3.导出往来数据":
+            st.subheader("导出往来数据")
+            st.markdown('''
+            该功能能够自动提取试算底稿的[应收账款、应付账款、其他应收、其他应付、其他非流动资产]的所有明细,<br>
+            自动剔除0余额列和不相关列,将文件夹下所有公司的底稿合并输出到同一个excel文件中，<br>
+            !!!该功能目前仅针对新版试算底稿（参考FY24华峰化学、FY24东方生物）!!!<br>
+            同一个保存路径文件夹默认覆盖之前的合并结果
+            ''')
+            source_path=st.text_input("请输入【试算底稿文件夹】路径:")
+            save_folder=st.text_input("请输入保存文件夹:")
+            if st.button("执行"):
+                try:
+                    main_merge_raw_wb(source_path,save_folder)
+                except Exception as e:
+                    st.error(f"执行失败！错误信息：{e}")
+
 
     # # 添加版权信息
     st.sidebar.write("---")
