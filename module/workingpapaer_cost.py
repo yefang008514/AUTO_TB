@@ -11,9 +11,8 @@ from multiprocessing.dummy import Pool as ThreadPool
 from concurrent.futures import ProcessPoolExecutor
 import os,sys
 sys.path.append(os.getcwd())
+
 from module.tool_fun import get_file_list
-
-
 
 # 参考 试算底稿路径
 # r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
@@ -78,7 +77,8 @@ def get_data_from_paper(path,sheet_name,start_cell,end_cell,engine,header=None):
                 wb.close()
 
     except Exception as e:
-        print(f'从{path}的{sheet_name}的{start_cell}到{end_cell}取数失败，错误信息：{e}')
+        df=pd.DataFrame()#如果不能取到 返回空df
+        # print(f'从{path}的{sheet_name}的{start_cell}到{end_cell}取数失败，错误信息：{e}')
 
     #把公司名放到前面那列
     raw_col=df.columns.tolist()
@@ -147,13 +147,13 @@ def paste_workingpaper(df,path_paper,sheet_name,first_cell,engine=None,path_save
 从excel批量取数 多进程
 默认读取有'公司';非日志;非打开的excel文件
 '''
-def read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header):
+def read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header,mode):
     #进程池 
     cpu_count = os.cpu_count()
     
-    temp_path_list = get_file_list(path)
+    temp_path_list = get_file_list(path,mode)
     # 默认读取有'公司';非日志;非打开的excel文件 文件名称不带合并字样
-    path_list = [i for i in temp_path_list if (('公司' in i or '1.01 HEALGEN SCIENTIFIC LLC 2024CNY' in i) and '日志' not in i and '~$' not in i and '合并' not in i.split('\\')[-1])]
+    path_list = [i for i in temp_path_list if '日志' not in i and '~$' not in i and '合并' not in i.split('\\')[-1]]
     sheet_name_list=[sheet_name for i in range(len(path_list))]
     start_cell_list=[start_cell for i in range(len(path_list))]
     end_cell_list=[end_cell for i in range(len(path_list))]
@@ -204,23 +204,27 @@ def get_cost_data(path):
     filterwarnings('ignore')
     result={}
     
-    #使用openpyxl读取数据 区域需要包含表头
+    #使用openpyxl读取数据 区域需要包含表头 如果不能取到 返回空df
     def get_data_openpyxl(wb,sheet_name,start_cell,end_cell,header=None):
-        sheet = wb[sheet_name]
-        data = []
-        header = 0 if header is None else header #表头默认首行
-        for row in sheet[f'{start_cell}:{end_cell}']:
-            data.append([cell.value for cell in row])
-        col_names = data[header]#首行默认为列名
-        df = pd.DataFrame(data[header+1:],dtype=object,columns=col_names)  # 设置列名
-        
-        #!!!!把"公司"提到列名前面!!!!
-        raw_colnames=df.columns.tolist()
-        df['公司']=path.split('\\')[-1].replace('.xlsx','')
-        col_names=['公司']+raw_colnames
-        df=df[col_names]
+        try:
+            sheet = wb[sheet_name]
+            data = []
+            header = 0 if header is None else header #表头默认首行
+            for row in sheet[f'{start_cell}:{end_cell}']:
+                data.append([cell.value for cell in row])
+            col_names = data[header]#首行默认为列名
+            df = pd.DataFrame(data[header+1:],dtype=object,columns=col_names)  # 设置列名
+            
+            #!!!!把"公司"提到列名前面!!!!
+            raw_colnames=df.columns.tolist()
+            df['公司']=path.split('\\')[-1].replace('.xlsx','')
+            col_names=['公司']+raw_colnames
+            df=df[col_names]
+        except:
+            df=pd.DataFrame()#如果不能取到 返回空df
 
         return df
+
     #审定表取数 ['公司','科目编码','底稿科目','附注分类','本期未审','重分类调整','审计调整']
     #销售费用 B1:G61
     #管理费用 B67:G131
@@ -250,21 +254,15 @@ def get_cost_data(path):
     return result
 
 '''1.批量读取数据'''
-def get_cost_data_multi(path):
+def get_cost_data_multi(path,mode):
 
     cpu_count = os.cpu_count()
     path=path
     
-    temp_path_list = get_file_list(path)
+    temp_path_list = get_file_list(path,mode)
     path_list = [i for i in temp_path_list if ('公司' in i and '日志' not in i and '~$' not in i and '小合并' not in i)] #默认读取有'公司';非日志;非打开的excel文件
     args=path_list
     # 进程池
-    # with Pool(processes=cpu_count-2) as pool:
-        # results=executor.map(get_cost_data,args) #返回各公司字典[result1,result2,result3]
-
-    # with ProcessPoolExecutor(max_workers=cpu_count) as executor:
-    #     results=list(executor.map(get_cost_data,args)) #返回各公司字典[result1,result2,result3]
-
     with ThreadPool(processes=cpu_count) as pool:
         results=pool.map(get_cost_data,args) #返回各公司字典[result1,result2,result3]
 
@@ -367,14 +365,14 @@ def paste_data(results,path,path_save):
         wb.close()
 
 '''生成费用底稿'''
-def gen_cost_workingpaper(path_data,path_paper,path_save):
+def gen_cost_workingpaper(path_data,path_paper,path_save,mode):
 
     path_data=path_data
     path_paper=path_paper
     path_save=path_save
 
     #1.批量读取数据
-    results=get_cost_data_multi(path_data)
+    results=get_cost_data_multi(path_data,mode)
 
     #2.粘贴数据到底稿
     paste_data(results,path_paper,path_save)

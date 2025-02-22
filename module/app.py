@@ -138,16 +138,20 @@ if __name__ == '__main__':
         if mode == "1.导出[销售、管理、研发费用底稿]":
             st.subheader("导出[销售、管理、研发费用底稿]")
             #初始化路径
+            st.subheader("!!!该功能尚不成熟，请谨慎使用!!!")
             
             path_data = st.text_input("请输入【试算底稿文件夹】路径:")
             path_app = pathlib.Path(__file__).parent.resolve()#获取当前文件所在目录
             path_paper = os.path.join(path_app,r'期间费用模板_empty.xlsx')#相对路径转换成绝对路径
             path_save = st.text_input("请输入底稿保存路径:")
+            read_mode = st.selectbox("选择模式", ["非穿透","穿透文件夹"])
+            st.markdown('''若选择：'穿透文件夹',会读取【试算底稿文件夹】下所有文件及其子文件夹所有文件  
+            若选择：'非穿透',则只读取【试算底稿文件夹】下的文件''')
 
             if st.button("执行"):
                 try:
                     start_time = time.time()
-                    gen_cost_workingpaper(path_data,path_paper,path_save)
+                    gen_cost_workingpaper(path_data,path_paper,path_save,read_mode)
                     end_time = time.time()
                     st.success(f"导出完成！耗时：{round(end_time-start_time,2)}秒,详见{path_save}")
                 except Exception as e:
@@ -167,16 +171,18 @@ if __name__ == '__main__':
             start_cell = st.text_input("请输入开始单元格:")
             end_cell = st.text_input("请输入结束单元格:")
             time_stamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
-            path_save = os.path.join(path,f'合并结果_{time_stamp}.xlsx')
+            path_save = os.path.join(path,f'合并结果_sheet【{sheet_name}】_{time_stamp}.xlsx')
+            read_mode = st.selectbox("选择模式", ["非穿透","穿透文件夹"])
+            st.markdown('''若选择：'穿透文件夹',会读取【试算底稿文件夹】下所有文件及其子文件夹所有文件  
+            若选择：'非穿透',则只读取【试算底稿文件夹】下的文件''')
 
             engine = 'openpyxl'
             header = None
-
             if st.button("执行"):
                 try:
                     start_time = time.time()
                     #这里有默认筛选条件 可以根据条件修改
-                    df=read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header)
+                    df=read_excel_multi(path,sheet_name,start_cell,end_cell,engine,header,read_mode)
                     df.to_excel(path_save,index=False)
                     end_time = time.time()
                     st.success(f"导出完成！耗时：{round(end_time-start_time,2)}秒,详见{path_save}")

@@ -5,15 +5,18 @@ import pandas as pd
 import os,sys
 sys.path.append(os.getcwd())
 
-'''1.获取文件夹下所有xlsx '''
-def get_file_list(folder_path):
+'''1.获取文件夹下所有xlsx 可选两种模式 若不选就不穿透'''
+def get_file_list(folder_path,mode=None):
     file_list = []
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            if file.endswith('.xlsx')  and '~$' not in file:
-                file_list.append(os.path.join(root, file))
-            else:
-                continue
+    if mode =='穿透文件夹' or mode is None:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                if file.endswith('.xlsx')  and '~$' not in file:
+                    file_list.append(os.path.join(root, file))
+                else:
+                    continue
+    elif mode =='非穿透':
+        file_list=[os.path.join(folder_path,file) for file in os.listdir(folder_path) if file.endswith('.xlsx') and '~$' not in file]
     return file_list
 
 '''2.向duckdb写入数据'''
