@@ -15,7 +15,7 @@ def get_file_list(folder_path,mode):
     if mode=='穿透文件夹':
         for root, dirs, files in os.walk(folder_path):
             for file in files:
-                if (file.endswith('.xlsx') or file.endswith('.xls') or file.endswith('.xlsm')) and '~$' not in file and '合并' not in file and '日志' not in file:
+                if (file.endswith('.xlsx') or file.endswith('.xls') or file.endswith('.xlsm')) and '试算' not in file and '~$' not in file and '合并' not in file and '日志' not in file:
                     file_list.append(os.path.join(root, file))
                 else:
                     continue
@@ -32,11 +32,18 @@ def extract_sheet_to_df_dict(source_file):
     file_name = os.path.basename(source_file) #提取文件名称
     file_name = file_name.replace('.xlsx','') #去掉后缀名
 
-    # 打开源Excel文件
-    wb_source = openpyxl.load_workbook(source_file,data_only=True,read_only=True)
     sheet_name_list = ['CF2', '应收账款', '应付账款', '预收账款', '预付账款', '其他非流动资产']
 
     result_dict={}
+    # 打开源Excel文件
+    try:
+        wb_source = openpyxl.load_workbook(source_file,data_only=True,read_only=True)
+    except Exception as e:
+        #返回错误信息
+        return {key:pd.DataFrame() for key in sheet_name_list}
+        # print(f'打开源文件{source_file}失败，错误信息：{e}')
+    
+
     for sheet_name in sheet_name_list:
         try:
             # 获取指定的Sheet
@@ -54,7 +61,8 @@ def extract_sheet_to_df_dict(source_file):
 
         except Exception as e:
             result_dict[sheet_name]=pd.DataFrame()
-            # raise(Exception(f"处理{source_file}的{sheet_name}遇到问题：{e}请检查"))
+
+
     
     return result_dict
 
@@ -273,6 +281,11 @@ def main_merge_raw_wb(source_path,save_folder,mode):
 
 if __name__ == '__main__':
 
-    source_path=r'C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \华峰化学2024年报\2、试算、报告、小结\1、试算表\2、年审'
-    save_folder=r"D:\audit_project\试算提取\华峰"
-    main_merge_raw_wb(source_path,save_folder)
+    # source_path=r'C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \华峰化学2024年报\2、试算、报告、小结\1、试算表\2、年审'
+    # save_folder=r"D:\audit_project\试算提取\华峰"
+    # main_merge_raw_wb(source_path,save_folder)
+
+    source_path=r'C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新'
+    save_folder=r"D:\audit_project\AUTO_TB\dist"
+    main_merge_raw_wb(source_path,save_folder,"穿透文件夹")
+    # print(get_file_list(source_path,"穿透文件夹"))
