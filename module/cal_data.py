@@ -78,6 +78,9 @@ def cal_cell_amount(data_map,data_acctount_2d):
     ''' 
     result=duckdb.sql(query).df()
     result['金额'].fillna(0,inplace=True)
+    #调试用
+    # xw.view(df_map)
+    # xw.view(result)
 
     return result
 

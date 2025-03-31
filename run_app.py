@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
 #测试路径 华峰
 # 试算底稿
-# D:\audit_project\AUTO_TB\华峰化学\测试试算\b2-重庆化工.xlsx
+# D:\audit_project\AUTO_TB\华峰化学\测试试算\【试算】b2-重庆化工.xlsx
 
 # 科目余额表
-# D:\audit_project\AUTO_TB\华峰化学\测试试算\科目余额表-b2-重庆化工.XLSX
+# D:\audit_project\AUTO_TB\华峰化学\测试试算\科目余额表-b2-重庆化工.xlsx
