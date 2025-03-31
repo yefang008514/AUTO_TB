@@ -25,3 +25,11 @@ if __name__ == "__main__":
 
 # pyinstaller --onefile --additional-hooks-dir=./hooks run_app.py --clean
 # pyinstaller run_app.spec --clean
+
+
+#测试路径 华峰
+# 试算底稿
+# D:\audit_project\AUTO_TB\华峰化学\测试试算\b2-重庆化工.xlsx
+
+# 科目余额表
+# D:\audit_project\AUTO_TB\华峰化学\测试试算\科目余额表-b2-重庆化工.XLSX

@@ -110,10 +110,62 @@ class Acct_Reader:
         result=body.copy()
         result.columns=col_names
         #带金额的列保留两位小数
-
         for col in col_names:
             if '金额' in col: 
                 result[col]=result[col].astype(float).round(2)
+        if record_path is not None:
+            result['file_path']=file_path
+        else:
+            pass
+
+        return result
+
+    def read_account_balance_HF(self,path=None,record_path=None):
+        #该函数通用表头在第一行的数据
+        if path is None:
+            file_path=self.path
+        else:
+            file_path=path
+        
+        dfs=pd.read_excel(file_path,sheet_name=None,header=0,dtype=object)
+        #遍历每个sheet，选取行数>0的,如果有2个行数大于0的df就报错
+        re=[]
+        for sheet_name,df in dfs.items():
+            if len(df)>0:
+                re.append(df)
+        if len(re)>1:
+            raise ValueError(f'{file_path}包含多个sheet，请检查导出文件是否正确')
+        result=re[0].copy()
+        result=result[result['科目代码'].notnull()].copy()
+        temp_df=result.copy()
+
+        #如果能转数值类型就保留两位小数
+        for col in result.columns:
+            if '外币' in col or '本位币' in col:
+                result[col]=result[col].astype(float).round(2)
+
+
+        #把前6位一级科目的科目代码单独汇总
+        result=duckdb.sql('''
+        select * from temp_df
+        union all
+        select 
+        left(科目代码,6) 科目代码,
+        string_split(科目名称,'-')[1] 科目名称,
+        货币代码,
+        sum(外币期初) 外币期初,
+        sum(外币借方) 外币借方,
+        sum(外币贷方) 外币贷方,
+        sum(外币期末) 外币期末,
+        本位货币代码,
+        sum(本位币货币期初) 本位币货币期初,
+        sum(本位货币借方) 本位货币借方,
+        sum(本位货币贷方) 本位货币贷方,
+        sum(本位货币期末) 本位货币期末
+        from temp_df
+        group by left(科目代码,6),string_split(科目名称,'-')[1],货币代码,本位货币代码
+        ''').df()
+        
         if record_path is not None:
             result['file_path']=file_path
         else:

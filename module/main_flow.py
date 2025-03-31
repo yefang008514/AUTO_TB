@@ -20,7 +20,7 @@ def replace_last_segment(file_path, new_segment):
     
     return new_file_path
 
-def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engine):
+def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engine,project):
     '''
     输入：
     df_mapping: 映射表字典
@@ -39,13 +39,18 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
     # print(path_account_balance)
 
     #1.读科目余额表
-    df_account_balance=Acct_Reader(path=path_account_balance).read_account_balance()
+    if project=='新纪元':
+        df_account_balance=Acct_Reader(path=path_account_balance).read_account_balance()
+    elif project=='SAP_华峰':
+        df_account_balance=Acct_Reader(path=path_account_balance).read_account_balance_HF()
 
     #2.处理科目余额表数据
-    df_acct_2d=unpivot_df_account_balance(df_account_balance)
+    df_acct_2d=unpivot_df_account_balance(df_account_balance,project)
 
-    #3.校验[原报表数据] 如果模板里面没有就不处理
-    if '原报表' not in dfs.keys():
+
+    #3.校验[原报表数据] 如果模板里面没有就不处理，!!华峰不处理原报表!!
+    judge_flag=('原报表' not in dfs.keys() or project=='SAP_华峰')
+    if judge_flag:
         pass
     else:
         result_verify=Verify_Statement(dfs['原报表'],df_acct_2d).verify_pre_result()
@@ -92,7 +97,7 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
             raise ValueError(f'更新{path_workingpaper}失败,错误信息：{e}')
 
     #6.保存日志
-    if '原报表' not in dfs.keys():
+    if judge_flag:
         result_verify=pd.DataFrame()
         path_log_save=None
     else:

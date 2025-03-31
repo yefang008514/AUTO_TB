@@ -44,6 +44,7 @@ if __name__ == '__main__':
         uploaded_mapping = st.file_uploader("请上传【试算单元格映射表】", type=['xlsx','xlsm'])
         engine = st.selectbox("选择引擎", ["excel", "wps","openpyxl"])
         mode_start = st.selectbox("是否需要期初", ["否", "是"])
+        project = st.selectbox("请选择项目类型",["新纪元","SAP_华峰"])
 
         if uploaded_mapping:
             df_mapping = MappingReader(path=uploaded_mapping, header=1).read_mapping_table()
@@ -69,7 +70,7 @@ if __name__ == '__main__':
                 if st.button("执行"):
                     if path_account_balance is not None and path_workingpaper is not None:
                         try:
-                            result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine)
+                            result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine,project)
                             if len(result)>0:
                                 st.success("处理完成! 日志保存在: " + log_file_path)
                                 st.dataframe(result)

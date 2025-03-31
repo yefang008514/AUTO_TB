@@ -8,7 +8,7 @@ from module.read_data import MappingReader,Acct_Reader
 
 #######################################结果计算####################################
 
-def unpivot_df_account_balance(data):
+def unpivot_df_account_balance(data,project):
 
     '''
     用duckdb的unpivot把[科目余额表]的各金额转换成二维表格格式
@@ -16,24 +16,46 @@ def unpivot_df_account_balance(data):
     '''
     df=data.copy()
     duckdb.register('df',df)
-    query='''
-    unpivot df
-    on 
-    "期初余额_金额",
-    "期初余额_借方金额",
-    "期初余额_贷方金额",
-    "期间发生额_借方金额",
-    "期间发生额_贷方金额",
-    "累计发生额_借方金额",
-    "累计发生额_贷方金额",
-    "期末余额_金额",
-    "期末余额_借方金额",
-    "期末余额_贷方金额"
-    into 
-    name 项目
-    value 金额
-    '''
+    if project=='新纪元':
+        query='''
+        unpivot df
+        on 
+        "期初余额_金额",
+        "期初余额_借方金额",
+        "期初余额_贷方金额",
+        "期间发生额_借方金额",
+        "期间发生额_贷方金额",
+        "累计发生额_借方金额",
+        "累计发生额_贷方金额",
+        "期末余额_金额",
+        "期末余额_借方金额",
+        "期末余额_贷方金额"
+        into 
+        name 项目
+        value 金额
+        '''
+    elif project=='SAP_华峰':
+        query='''
+        unpivot df
+        on 
+        "本位币货币期初",
+        "本位货币借方",
+        "本位货币贷方",
+        "本位货币期末",
+        "外币期初",
+        "外币借方",
+        "外币贷方",
+        "外币期末"
+        into 
+        name 项目
+        value 金额
+        '''
+
     result=duckdb.sql(query).df()
+    #兼容适配账户代码
+    if project=='SAP_华峰':
+        result['账户代码']=result['科目代码']
+        result['账户名称']=result['科目名称']
     return result
 
 
