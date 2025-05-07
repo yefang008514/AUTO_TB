@@ -59,13 +59,21 @@ def unpivot_df_account_balance(data,project):
     return result
 
 
-def cal_cell_amount(data_map,data_acctount_2d):
+def cal_cell_amount(data_map,data_acctount_2d,sheet_name,exchange_rate):
     '''
     #关联映射表和科目余额表计算【单元格金额】
     返回 [单元格,金额]
     '''
     df_map=data_map.copy()
     df_acct_2d=data_acctount_2d.copy()
+
+    #汇率选择
+    if sheet_name in ['1','2','4','4.1_递延','5','6']:
+        final_rate=exchange_rate[0]#资产负债表科目
+    elif sheet_name in ['8']:
+        final_rate=exchange_rate[1]#利润表科目
+    else: #原报表用原币刷
+        final_rate=1
 
     duckdb.register('df_map',df_map)
     duckdb.register('df_acct_2d',df_acct_2d)
@@ -78,6 +86,8 @@ def cal_cell_amount(data_map,data_acctount_2d):
     ''' 
     result=duckdb.sql(query).df()
     result['金额'].fillna(0,inplace=True)
+    result['金额']=result['金额']*final_rate
+    result['金额']=result['金额'].round(2)
     #调试用
     # xw.view(df_map)
     # xw.view(result)

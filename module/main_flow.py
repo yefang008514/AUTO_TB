@@ -20,7 +20,7 @@ def replace_last_segment(file_path, new_segment):
     
     return new_file_path
 
-def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engine,project):
+def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engine,project,exchange_rate):
     '''
     输入：
     df_mapping: 映射表字典
@@ -56,7 +56,9 @@ def main_flow(df_mapping,path_account_balance,path_workingpaper,single_save,engi
         result_verify=Verify_Statement(dfs['原报表'],df_acct_2d).verify_pre_result()
 
     #4.生成试算数据
-    result_updates={key:cal_cell_amount(value,df_acct_2d) for key,value in dfs.items()}
+    #添加汇率
+
+    result_updates={key:cal_cell_amount(value,df_acct_2d,key,exchange_rate) for key,value in dfs.items()}
     # xw.view(result_updates['8_费用'])
 
     #5.更新试算底稿
@@ -155,9 +157,9 @@ if __name__ == '__main__':
     # path_account_balance=r"D:\audit_project\AUTO_TB\东方生物\FY24\科目余额表_FY24_树状展开\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
     # path_workingpaper=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\共享文件夹 \东方生物2024年年审\2、试算\2024年试算-最新\1.00 浙江东方基因生物制品股份有限公司 2024.xlsx"
 
-    df_mapping=MappingReader(path=path_mapping,header=1).read_mapping_table()
-    main_flow(df_mapping=df_mapping,path_account_balance=path_account_balance,path_workingpaper=path_workingpaper,single_save=True,engine='excel') 
-    print('Done')
+    # df_mapping=MappingReader(path=path_mapping,header=1).read_mapping_table()
+    # main_flow(df_mapping=df_mapping,path_account_balance=path_account_balance,path_workingpaper=path_workingpaper,single_save=True,engine='excel') 
+    # print('Done')
 
     #循环 先走遍历的逻辑
     # path_relation=r"D:\audit_project\AUTO_TB\试算科余映射.xlsm"

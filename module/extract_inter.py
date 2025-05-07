@@ -273,9 +273,7 @@ def main_merge_raw_wb(source_path,save_folder,mode):
         #进度条
         st.progress((sheet_name_list.index(sheet_name)+1)/len(sheet_name_list))
         st.write(f"合并【{sheet_name}】完成")
-        # print(f"合并【{sheet_name}】完成")
     st.success(f"全部合并完成,详见文件夹: {save_folder}")
-    # print(f"全部合并完成,详见{save_folder}文件夹")
 
 
 

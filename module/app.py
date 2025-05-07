@@ -40,11 +40,16 @@ if __name__ == '__main__':
         !!!!强烈建议使用本功能前备份原始文件!!!!''')
 
         ##################初始化参数#################
-        single_save=True
+        
         uploaded_mapping = st.file_uploader("请上传【试算单元格映射表】", type=['xlsx','xlsm'])
         engine = st.selectbox("选择引擎", ["excel", "wps","openpyxl"])
         mode_start = st.selectbox("是否需要期初", ["否", "是"])
+        save_flag = st.selectbox("是否保存原报表日志", ["否", "是"])
         project = st.selectbox("请选择项目类型",["新纪元","SAP_华峰"])
+        single_save=False if save_flag=="否" else True # single_save=True #保存原报表日志
+        rate_start=st.text_input("请输入期末汇率(人民币报表请输入1):")
+        avg_rate=st.text_input("请输入平均汇率(人民币报表请输入1):")
+        exchange_rate=[round(float(rate_start),4),round(float(avg_rate),4)]
 
         if uploaded_mapping:
             df_mapping = MappingReader(path=uploaded_mapping, header=1).read_mapping_table()
@@ -70,7 +75,7 @@ if __name__ == '__main__':
                 if st.button("执行"):
                     if path_account_balance is not None and path_workingpaper is not None:
                         try:
-                            result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine,project)
+                            result,log_file_path = main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine,project,exchange_rate)
                             if len(result)>0:
                                 st.success("处理完成! 日志保存在: " + log_file_path)
                                 st.dataframe(result)
@@ -94,7 +99,7 @@ if __name__ == '__main__':
                             try:
                                 path_account_balance = list_acct_path[i]
                                 path_workingpaper = list_workingpaper_path[i]
-                                result,log_file_path=main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine,project)
+                                result,log_file_path=main_flow(df_mapping, path_account_balance, path_workingpaper,single_save,engine,project,exchange_rate)
                                 #显示进度条
                                 file_name_TB=list_workingpaper_path[i].split('\\')[-1]
                                 st.write(f'''正在处理文件：{file_name_TB},执行进度：{i+1}/{len(list_acct_path)}''')
