@@ -124,14 +124,14 @@ if __name__ == '__main__':
 
     paste_cost_loop()#贴费用明细
 
-    # path_mapping=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\华峰集团_FY24\【单元格映射表】华峰_【科余】_all.xlsx"
+    # path_mapping=r"D:\wps_cloud_sync\339514258\WPS云盘\华峰集团_FY24\【单元格映射表】华峰_【科余】_all.xlsx"
     # run_main_flow_loop(uploaded_mapping=path_mapping)#科目余额表贴试算
 
     # paste_report_loop(type='外币',sheet_name='原报表USD')#贴原报表
 
     # paste_cost_loop(type='外币',exchange_rate=7.1140)#贴费用明细
 
-    # path_mapping=r"C:\Users\yefan\WPSDrive\339514258\WPS云盘\华峰集团_FY24\【单元格映射表】华峰_【科余】_外币.xlsx"
+    # path_mapping=r"D:\wps_cloud_sync\339514258\WPS云盘\华峰集团_FY24\【单元格映射表】华峰_【科余】_外币.xlsx"
     # run_main_flow_loop(type='外币',exchange_rate=[7.1884,7.1140],uploaded_mapping=path_mapping)#科目余额表贴试算
 
 
@@ -140,6 +140,7 @@ if __name__ == '__main__':
     
     # exchange_rate=['7.1884','7.1140']
 
+    # 
  
 
 
